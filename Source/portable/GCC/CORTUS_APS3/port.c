@@ -67,91 +67,121 @@
     1 tab == 4 spaces!
 */
 
-/**
- * This version of flash .c is for use on systems that have limited stack space
- * and no display facilities.  The complete version can be found in the 
- * Demo/Common/Full directory.
- * 
- * Three tasks are created, each of which flash an LED at a different rate.  The first 
- * LED flashes every 200ms, the second every 400ms, the third every 600ms.
- *
- * The LED flash tasks provide instant visual feedback.  They show that the scheduler 
- * is still operational.
- *
- */
-
-
+/* Standard includes. */
 #include <stdlib.h>
 
-/* Scheduler include files. */
+/* Kernel includes. */
 #include "FreeRTOS.h"
 #include "task.h"
-#include "semphr.h"
 
-/* Demo program include files. */
-#include "partest.h"
-#include "USBSerial.h"
+/* Machine includes */
+#include <machine/counter.h>
+#include <machine/ic.h>
+/*-----------------------------------------------------------*/
 
-#define USBSerialSTACK_SIZE		configMINIMAL_STACK_SIZE
-const TickType_t xDelay = 100 / portTICK_PERIOD_MS;
-const TickType_t mDelay = 5000 / portTICK_PERIOD_MS;
-    
-/* The task that is created three times. */
-static portTASK_FUNCTION_PROTO( vUSBSerialTask, pvParameters );
-
-SemaphoreHandle_t USBMutex;
+/* The initial PSR has the Previous Interrupt Enabled (PIEN) flag set. */
+#define portINITIAL_PSR			( 0x00020000 )
 
 /*-----------------------------------------------------------*/
 
-void usbserial_putString(const char msg[])
-{
-    if(0 == USBUART_GetConfiguration()) return;
-    xSemaphoreTake(USBMutex,portMAX_DELAY);
-    while(0 == USBUART_CDCIsReady()) vTaskDelay(xDelay);
-    USBUART_PutString(msg);
-    xSemaphoreGive(USBMutex);
-}
+/*
+ * Perform any hardware configuration necessary to generate the tick interrupt.
+ */
+static void prvSetupTimerInterrupt( void );
+/*-----------------------------------------------------------*/
 
-void vStartUSBSerialTasks( UBaseType_t uxPriority )
+StackType_t *pxPortInitialiseStack( StackType_t * pxTopOfStack, TaskFunction_t pxCode, void *pvParameters )
 {
-    /*Setup the mutex to control port access*/
-    USBMutex = xSemaphoreCreateMutex();
-	/* Spawn the task. */
-	xTaskCreate( vUSBSerialTask, "USBSerial", USBSerialSTACK_SIZE, NULL, uxPriority, ( TaskHandle_t * ) NULL );
+	/* Make space on the stack for the context - this leaves a couple of spaces
+	empty.  */
+	pxTopOfStack -= 20;
 
+	/* Fill the registers with known values to assist debugging. */
+	pxTopOfStack[ 16 ] = 0;
+	pxTopOfStack[ 15 ] = portINITIAL_PSR;
+	pxTopOfStack[ 14 ] = ( uint32_t ) pxCode;
+	pxTopOfStack[ 13 ] = 0x00000000UL; /* R15. */
+	pxTopOfStack[ 12 ] = 0x00000000UL; /* R14. */
+	pxTopOfStack[ 11 ] = 0x0d0d0d0dUL;
+	pxTopOfStack[ 10 ] = 0x0c0c0c0cUL;
+	pxTopOfStack[ 9 ] = 0x0b0b0b0bUL;
+	pxTopOfStack[ 8 ] = 0x0a0a0a0aUL;
+	pxTopOfStack[ 7 ] = 0x09090909UL;
+	pxTopOfStack[ 6 ] = 0x08080808UL;
+	pxTopOfStack[ 5 ] = 0x07070707UL;
+	pxTopOfStack[ 4 ] = 0x06060606UL;
+	pxTopOfStack[ 3 ] = 0x05050505UL;
+	pxTopOfStack[ 2 ] = 0x04040404UL;
+	pxTopOfStack[ 1 ] = 0x03030303UL;
+	pxTopOfStack[ 0 ] = ( uint32_t ) pvParameters;
+
+	return pxTopOfStack;
 }
 /*-----------------------------------------------------------*/
 
-static portTASK_FUNCTION( vUSBSerialTask, pvParameters )
+BaseType_t xPortStartScheduler( void )
 {
-   	/* The parameters are not used. */
-	( void ) pvParameters;
+	/* Set-up the timer interrupt. */
+	prvSetupTimerInterrupt();
 
-    /* Start the USB_UART */
-    /* Start USBFS operation with 5-V operation. */
-    USBUART_Start(0, USBUART_5V_OPERATION);
+	/* Integrated Interrupt Controller: Enable all interrupts. */
+	ic->ien = 1;
 
-    
-	for(;;)
+	/* Restore callee saved registers. */
+	portRESTORE_CONTEXT();
+
+	/* Should not get here. */
+	return 0;
+}
+/*-----------------------------------------------------------*/
+
+static void prvSetupTimerInterrupt( void )
+{
+	/* Enable timer interrupts */
+	counter1->reload = ( configCPU_CLOCK_HZ / configTICK_RATE_HZ ) - 1;
+	counter1->value = counter1->reload;
+	counter1->mask = 1;
+
+	/* Set the IRQ Handler priority and enable it. */
+	irq[ IRQ_COUNTER1 ].ien = 1;
+}
+/*-----------------------------------------------------------*/
+
+/* Trap 31 handler. */
+void interrupt31_handler( void ) __attribute__((naked));
+void interrupt31_handler( void )
+{
+	portSAVE_CONTEXT();
+	__asm volatile ( "call vTaskSwitchContext" );
+	portRESTORE_CONTEXT();
+}
+/*-----------------------------------------------------------*/
+
+static void prvProcessTick( void ) __attribute__((noinline));
+static void prvProcessTick( void )
+{
+	if( xTaskIncrementTick() != pdFALSE )
 	{
-        /* Host can send double SET_INTERFACE request. */
-        if (0u != USBUART_IsConfigurationChanged())
-        {
-            /* Initialize IN endpoints when device is configured. */
-            if (0u != USBUART_GetConfiguration())
-            {
-                /* Enumeration is done, enable OUT endpoint to receive data 
-                 * from host. */
-                USBUART_CDC_Init();
-            }
-        }
-        
-        if(0 != USBUART_GetConfiguration())
-        {
-            /* Get and process inputs here */
-            vTaskDelay(mDelay);
-        }
-        vTaskDelay(xDelay);
+		vTaskSwitchContext();
 	}
-} /*lint !e715 !e818 !e830 Function definition must be standard for task creation. */
+		
+	/* Clear the Tick Interrupt. */
+	counter1->expired = 0;
+}
+/*-----------------------------------------------------------*/
 
+/* Timer 1 interrupt handler, used for tick interrupt. */
+void interrupt7_handler( void ) __attribute__((naked));
+void interrupt7_handler( void )
+{
+	portSAVE_CONTEXT();
+	prvProcessTick();
+	portRESTORE_CONTEXT();
+}
+/*-----------------------------------------------------------*/
+
+void vPortEndScheduler( void )
+{
+	/* Nothing to do. Unlikely to want to end. */
+}
+/*-----------------------------------------------------------*/

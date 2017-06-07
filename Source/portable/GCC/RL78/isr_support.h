@@ -67,91 +67,102 @@
     1 tab == 4 spaces!
 */
 
-/**
- * This version of flash .c is for use on systems that have limited stack space
- * and no display facilities.  The complete version can be found in the 
- * Demo/Common/Full directory.
- * 
- * Three tasks are created, each of which flash an LED at a different rate.  The first 
- * LED flashes every 200ms, the second every 400ms, the third every 600ms.
- *
- * The LED flash tasks provide instant visual feedback.  They show that the scheduler 
- * is still operational.
- *
+/* Variables used by scheduler */
+	.extern    _pxCurrentTCB
+	.extern    _usCriticalNesting
+
+/*
+ * portSAVE_CONTEXT MACRO
+ * Saves the context of the general purpose registers, CS and ES (only in far
+ * memory mode) registers the usCriticalNesting Value and the Stack Pointer
+ * of the active Task onto the task stack
  */
+	.macro portSAVE_CONTEXT
+
+	SEL 	RB0
+
+	/* Save AX Register to stack. */
+	PUSH	AX
+	PUSH	HL
+	/* Save CS register. */
+	MOV 	A, CS
+	XCH		A, X
+	/* Save ES register. */
+	MOV		A, ES
+	PUSH	AX
+	/* Save the remaining general purpose registers from bank 0. */
+	PUSH	DE
+	PUSH	BC
+	/* Save the other register banks - only necessary in the GCC port. */
+	SEL		RB1
+	PUSH	AX
+	PUSH	BC
+	PUSH	DE
+	PUSH	HL
+	SEL		RB2
+	PUSH	AX
+	PUSH	BC
+	PUSH	DE
+	PUSH	HL
+	/* Registers in bank 3 are for ISR use only so don't need saving. */
+	SEL		RB0
+	/* Save the usCriticalNesting value. */
+	MOVW	AX, !_usCriticalNesting
+	PUSH	AX
+	/* Save the Stack pointer. */
+	MOVW	AX, !_pxCurrentTCB
+	MOVW	HL, AX
+	MOVW	AX, SP
+	MOVW	[HL], AX
+	/* Switch stack pointers. */
+	movw sp,#_stack /* Set stack pointer */
+
+	.endm
 
 
-#include <stdlib.h>
+/*
+ * portRESTORE_CONTEXT MACRO
+ * Restores the task Stack Pointer then use this to restore usCriticalNesting,
+ * general purpose registers and the CS and ES (only in far memory mode)
+ * of the selected task from the task stack
+ */
+.macro portRESTORE_CONTEXT MACRO
+	SEL		RB0
+	/* Restore the Stack pointer. */
+	MOVW	AX, !_pxCurrentTCB
+	MOVW	HL, AX
+	MOVW	AX, [HL]
+	MOVW	SP, AX
+	/* Restore usCriticalNesting value. */
+	POP		AX
+	MOVW	!_usCriticalNesting, AX
+	/* Restore the alternative register banks - only necessary in the GCC
+	port.  Register bank 3 is dedicated for interrupts use so is not saved or
+	restored. */
+	SEL		RB2
+	POP		HL
+	POP		DE
+	POP		BC
+	POP		AX
+	SEL		RB1
+	POP		HL
+	POP		DE
+	POP		BC
+	POP		AX
+	SEL		RB0
+	/* Restore the necessary general purpose registers. */
+	POP		BC
+	POP		DE
+	/* Restore the ES register. */
+	POP		AX
+	MOV		ES, A
+	/* Restore the CS register. */
+	XCH		A, X
+	MOV		CS, A
+	/* Restore general purpose register HL. */
+	POP		HL
+	/* Restore AX. */
+	POP		AX
 
-/* Scheduler include files. */
-#include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
-
-/* Demo program include files. */
-#include "partest.h"
-#include "USBSerial.h"
-
-#define USBSerialSTACK_SIZE		configMINIMAL_STACK_SIZE
-const TickType_t xDelay = 100 / portTICK_PERIOD_MS;
-const TickType_t mDelay = 5000 / portTICK_PERIOD_MS;
-    
-/* The task that is created three times. */
-static portTASK_FUNCTION_PROTO( vUSBSerialTask, pvParameters );
-
-SemaphoreHandle_t USBMutex;
-
-/*-----------------------------------------------------------*/
-
-void usbserial_putString(const char msg[])
-{
-    if(0 == USBUART_GetConfiguration()) return;
-    xSemaphoreTake(USBMutex,portMAX_DELAY);
-    while(0 == USBUART_CDCIsReady()) vTaskDelay(xDelay);
-    USBUART_PutString(msg);
-    xSemaphoreGive(USBMutex);
-}
-
-void vStartUSBSerialTasks( UBaseType_t uxPriority )
-{
-    /*Setup the mutex to control port access*/
-    USBMutex = xSemaphoreCreateMutex();
-	/* Spawn the task. */
-	xTaskCreate( vUSBSerialTask, "USBSerial", USBSerialSTACK_SIZE, NULL, uxPriority, ( TaskHandle_t * ) NULL );
-
-}
-/*-----------------------------------------------------------*/
-
-static portTASK_FUNCTION( vUSBSerialTask, pvParameters )
-{
-   	/* The parameters are not used. */
-	( void ) pvParameters;
-
-    /* Start the USB_UART */
-    /* Start USBFS operation with 5-V operation. */
-    USBUART_Start(0, USBUART_5V_OPERATION);
-
-    
-	for(;;)
-	{
-        /* Host can send double SET_INTERFACE request. */
-        if (0u != USBUART_IsConfigurationChanged())
-        {
-            /* Initialize IN endpoints when device is configured. */
-            if (0u != USBUART_GetConfiguration())
-            {
-                /* Enumeration is done, enable OUT endpoint to receive data 
-                 * from host. */
-                USBUART_CDC_Init();
-            }
-        }
-        
-        if(0 != USBUART_GetConfiguration())
-        {
-            /* Get and process inputs here */
-            vTaskDelay(mDelay);
-        }
-        vTaskDelay(xDelay);
-	}
-} /*lint !e715 !e818 !e830 Function definition must be standard for task creation. */
+	.endm
 

@@ -67,91 +67,96 @@
     1 tab == 4 spaces!
 */
 
-/**
- * This version of flash .c is for use on systems that have limited stack space
- * and no display facilities.  The complete version can be found in the 
- * Demo/Common/Full directory.
+/*
+ * Purpose: Lowest level routines for all ColdFire processors.
+ *
+ * Notes:
  * 
- * Three tasks are created, each of which flash an LED at a different rate.  The first 
- * LED flashes every 200ms, the second every 400ms, the third every 600ms.
- *
- * The LED flash tasks provide instant visual feedback.  They show that the scheduler 
- * is still operational.
- *
+ * ulPortSetIPL() and mcf5xxx_wr_cacr() copied with permission from FreeScale
+ * supplied source files.
  */
 
+    .global ulPortSetIPL
+    .global mcf5xxx_wr_cacr
+    .global __cs3_isr_interrupt_80
+    .global vPortStartFirstTask
 
-#include <stdlib.h>
+    .text
 
-/* Scheduler include files. */
-#include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
+.macro portSAVE_CONTEXT
 
-/* Demo program include files. */
-#include "partest.h"
-#include "USBSerial.h"
+	lea.l		(-60, %sp), %sp
+	movem.l		%d0-%fp, (%sp)
+	move.l		pxCurrentTCB, %a0
+	move.l		%sp, (%a0)
 
-#define USBSerialSTACK_SIZE		configMINIMAL_STACK_SIZE
-const TickType_t xDelay = 100 / portTICK_PERIOD_MS;
-const TickType_t mDelay = 5000 / portTICK_PERIOD_MS;
-    
-/* The task that is created three times. */
-static portTASK_FUNCTION_PROTO( vUSBSerialTask, pvParameters );
+	.endm
 
-SemaphoreHandle_t USBMutex;
+.macro portRESTORE_CONTEXT
 
-/*-----------------------------------------------------------*/
+	move.l		pxCurrentTCB, %a0
+	move.l		(%a0), %sp
+	movem.l		(%sp), %d0-%fp
+	lea.l		%sp@(60), %sp
+	rte
 
-void usbserial_putString(const char msg[])
-{
-    if(0 == USBUART_GetConfiguration()) return;
-    xSemaphoreTake(USBMutex,portMAX_DELAY);
-    while(0 == USBUART_CDCIsReady()) vTaskDelay(xDelay);
-    USBUART_PutString(msg);
-    xSemaphoreGive(USBMutex);
-}
+	.endm
 
-void vStartUSBSerialTasks( UBaseType_t uxPriority )
-{
-    /*Setup the mutex to control port access*/
-    USBMutex = xSemaphoreCreateMutex();
-	/* Spawn the task. */
-	xTaskCreate( vUSBSerialTask, "USBSerial", USBSerialSTACK_SIZE, NULL, uxPriority, ( TaskHandle_t * ) NULL );
+/********************************************************************/
+/*
+ * This routines changes the IPL to the value passed into the routine.
+ * It also returns the old IPL value back.
+ * Calling convention from C:
+ *   old_ipl = asm_set_ipl(new_ipl);
+ * For the Diab Data C compiler, it passes return value thru D0.
+ * Note that only the least significant three bits of the passed
+ * value are used.
+ */
 
-}
-/*-----------------------------------------------------------*/
+ulPortSetIPL:
+    link    A6,#-8
+    movem.l D6-D7,(SP)
 
-static portTASK_FUNCTION( vUSBSerialTask, pvParameters )
-{
-   	/* The parameters are not used. */
-	( void ) pvParameters;
+    move.w  SR,D7       /* current sr    */
 
-    /* Start the USB_UART */
-    /* Start USBFS operation with 5-V operation. */
-    USBUART_Start(0, USBUART_5V_OPERATION);
+    move.l  D7,D0       /* prepare return value  */
+    andi.l  #0x0700,D0  /* mask out IPL  */
+    lsr.l   #8,D0       /* IPL   */
 
-    
-	for(;;)
-	{
-        /* Host can send double SET_INTERFACE request. */
-        if (0u != USBUART_IsConfigurationChanged())
-        {
-            /* Initialize IN endpoints when device is configured. */
-            if (0u != USBUART_GetConfiguration())
-            {
-                /* Enumeration is done, enable OUT endpoint to receive data 
-                 * from host. */
-                USBUART_CDC_Init();
-            }
-        }
-        
-        if(0 != USBUART_GetConfiguration())
-        {
-            /* Get and process inputs here */
-            vTaskDelay(mDelay);
-        }
-        vTaskDelay(xDelay);
-	}
-} /*lint !e715 !e818 !e830 Function definition must be standard for task creation. */
+    move.l  8(A6),D6    /* get argument  */
+    andi.l  #0x07,D6    /* least significant three bits  */
+    lsl.l   #8,D6       /* move over to make mask    */
+
+    andi.l  #0x0000F8FF,D7  /* zero out current IPL  */
+    or.l    D6,D7           /* place new IPL in sr   */
+    move.w  D7,SR
+
+    movem.l (SP),D6-D7
+    lea     8(SP),SP
+    unlk    A6
+    rts
+/********************************************************************/
+
+mcf5xxx_wr_cacr:
+    move.l  4(sp),d0
+    .long   0x4e7b0002  /* movec d0,cacr   */
+    nop
+    rts
+
+/********************************************************************/
+
+/* Yield interrupt. */
+__cs3_isr_interrupt_80:
+	portSAVE_CONTEXT
+	jsr vPortYieldHandler
+	portRESTORE_CONTEXT
+
+/********************************************************************/
+
+
+vPortStartFirstTask:
+	portRESTORE_CONTEXT
+
+    .end
+
 

@@ -67,91 +67,73 @@
     1 tab == 4 spaces!
 */
 
-/**
- * This version of flash .c is for use on systems that have limited stack space
- * and no display facilities.  The complete version can be found in the 
- * Demo/Common/Full directory.
- * 
- * Three tasks are created, each of which flash an LED at a different rate.  The first 
- * LED flashes every 200ms, the second every 400ms, the third every 600ms.
- *
- * The LED flash tasks provide instant visual feedback.  They show that the scheduler 
- * is still operational.
- *
- */
 
+/*
+ * Implementation of pvPortMalloc() and vPortFree() that relies on the
+ * compilers own malloc() and free() implementations.
+ *
+ * This file can only be used if the linker is configured to to generate
+ * a heap memory area.
+ *
+ * See heap_1.c, heap_2.c and heap_4.c for alternative implementations, and the
+ * memory management pages of http://www.FreeRTOS.org for more information.
+ */
 
 #include <stdlib.h>
 
-/* Scheduler include files. */
+/* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
+all the API functions to use the MPU wrappers.  That should only be done when
+task.h is included from an application file. */
+#define MPU_WRAPPERS_INCLUDED_FROM_API_FILE
+
 #include "FreeRTOS.h"
 #include "task.h"
-#include "semphr.h"
 
-/* Demo program include files. */
-#include "partest.h"
-#include "USBSerial.h"
+#undef MPU_WRAPPERS_INCLUDED_FROM_API_FILE
 
-#define USBSerialSTACK_SIZE		configMINIMAL_STACK_SIZE
-const TickType_t xDelay = 100 / portTICK_PERIOD_MS;
-const TickType_t mDelay = 5000 / portTICK_PERIOD_MS;
-    
-/* The task that is created three times. */
-static portTASK_FUNCTION_PROTO( vUSBSerialTask, pvParameters );
-
-SemaphoreHandle_t USBMutex;
+#if( configSUPPORT_DYNAMIC_ALLOCATION == 0 )
+	#error This file must not be used if configSUPPORT_DYNAMIC_ALLOCATION is 0
+#endif
 
 /*-----------------------------------------------------------*/
 
-void usbserial_putString(const char msg[])
+void *pvPortMalloc( size_t xWantedSize )
 {
-    if(0 == USBUART_GetConfiguration()) return;
-    xSemaphoreTake(USBMutex,portMAX_DELAY);
-    while(0 == USBUART_CDCIsReady()) vTaskDelay(xDelay);
-    USBUART_PutString(msg);
-    xSemaphoreGive(USBMutex);
-}
+void *pvReturn;
 
-void vStartUSBSerialTasks( UBaseType_t uxPriority )
-{
-    /*Setup the mutex to control port access*/
-    USBMutex = xSemaphoreCreateMutex();
-	/* Spawn the task. */
-	xTaskCreate( vUSBSerialTask, "USBSerial", USBSerialSTACK_SIZE, NULL, uxPriority, ( TaskHandle_t * ) NULL );
-
-}
-/*-----------------------------------------------------------*/
-
-static portTASK_FUNCTION( vUSBSerialTask, pvParameters )
-{
-   	/* The parameters are not used. */
-	( void ) pvParameters;
-
-    /* Start the USB_UART */
-    /* Start USBFS operation with 5-V operation. */
-    USBUART_Start(0, USBUART_5V_OPERATION);
-
-    
-	for(;;)
+	vTaskSuspendAll();
 	{
-        /* Host can send double SET_INTERFACE request. */
-        if (0u != USBUART_IsConfigurationChanged())
-        {
-            /* Initialize IN endpoints when device is configured. */
-            if (0u != USBUART_GetConfiguration())
-            {
-                /* Enumeration is done, enable OUT endpoint to receive data 
-                 * from host. */
-                USBUART_CDC_Init();
-            }
-        }
-        
-        if(0 != USBUART_GetConfiguration())
-        {
-            /* Get and process inputs here */
-            vTaskDelay(mDelay);
-        }
-        vTaskDelay(xDelay);
+		pvReturn = malloc( xWantedSize );
+		traceMALLOC( pvReturn, xWantedSize );
 	}
-} /*lint !e715 !e818 !e830 Function definition must be standard for task creation. */
+	( void ) xTaskResumeAll();
+
+	#if( configUSE_MALLOC_FAILED_HOOK == 1 )
+	{
+		if( pvReturn == NULL )
+		{
+			extern void vApplicationMallocFailedHook( void );
+			vApplicationMallocFailedHook();
+		}
+	}
+	#endif
+
+	return pvReturn;
+}
+/*-----------------------------------------------------------*/
+
+void vPortFree( void *pv )
+{
+	if( pv )
+	{
+		vTaskSuspendAll();
+		{
+			free( pv );
+			traceFREE( pv, 0 );
+		}
+		( void ) xTaskResumeAll();
+	}
+}
+
+
 

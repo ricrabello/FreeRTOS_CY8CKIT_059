@@ -66,92 +66,174 @@
 
     1 tab == 4 spaces!
 */
+	.extern pxCurrentTCB
+	.extern vTaskISRHandler
+	.extern vTaskSwitchContext
+	.extern uxCriticalNesting
+	.extern pulISRStack
 
-/**
- * This version of flash .c is for use on systems that have limited stack space
- * and no display facilities.  The complete version can be found in the 
- * Demo/Common/Full directory.
- * 
- * Three tasks are created, each of which flash an LED at a different rate.  The first 
- * LED flashes every 200ms, the second every 400ms, the third every 600ms.
- *
- * The LED flash tasks provide instant visual feedback.  They show that the scheduler 
- * is still operational.
- *
- */
+	.global __FreeRTOS_interrupt_handler
+	.global VPortYieldASM
+	.global vStartFirstTask
 
 
-#include <stdlib.h>
+.macro portSAVE_CONTEXT
+	/* Make room for the context on the stack. */
+	addik r1, r1, -132
+	/* Save r31 so it can then be used. */
+	swi r31, r1, 4
+	/* Copy the msr into r31 - this is stacked later. */
+	mfs r31, rmsr
+	/* Stack general registers. */
+	swi r30, r1, 12
+	swi r29, r1, 16
+	swi r28, r1, 20
+	swi r27, r1, 24
+	swi r26, r1, 28
+	swi r25, r1, 32
+	swi r24, r1, 36
+	swi r23, r1, 40
+	swi r22, r1, 44
+	swi r21, r1, 48
+	swi r20, r1, 52
+	swi r19, r1, 56
+	swi r18, r1, 60
+	swi r17, r1, 64
+	swi r16, r1, 68
+	swi r15, r1, 72
+	swi r13, r1, 80
+	swi r12, r1, 84
+	swi r11, r1, 88
+	swi r10, r1, 92
+	swi r9, r1, 96
+	swi r8, r1, 100
+	swi r7, r1, 104
+	swi r6, r1, 108
+	swi r5, r1, 112
+	swi r4, r1, 116
+	swi r3, r1, 120
+	swi r2, r1, 124
+	/* Stack the critical section nesting value. */
+	lwi r3, r0, uxCriticalNesting
+	swi r3, r1, 128
+	/* Save the top of stack value to the TCB. */
+	lwi r3, r0, pxCurrentTCB
+	sw	r1, r0, r3
+	
+	.endm
 
-/* Scheduler include files. */
-#include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
+.macro portRESTORE_CONTEXT
+	/* Load the top of stack value from the TCB. */
+	lwi r3, r0, pxCurrentTCB
+	lw	r1, r0, r3	
+	/* Restore the general registers. */
+	lwi r31, r1, 4		
+	lwi r30, r1, 12		
+	lwi r29, r1, 16	
+	lwi r28, r1, 20	
+	lwi r27, r1, 24	
+	lwi r26, r1, 28	
+	lwi r25, r1, 32	
+	lwi r24, r1, 36	
+	lwi r23, r1, 40	
+	lwi r22, r1, 44	
+	lwi r21, r1, 48	
+	lwi r20, r1, 52	
+	lwi r19, r1, 56	
+	lwi r18, r1, 60	
+	lwi r17, r1, 64	
+	lwi r16, r1, 68	
+	lwi r15, r1, 72	
+	lwi r14, r1, 76	
+	lwi r13, r1, 80	
+	lwi r12, r1, 84	
+	lwi r11, r1, 88	
+	lwi r10, r1, 92	
+	lwi r9, r1, 96	
+	lwi r8, r1, 100	
+	lwi r7, r1, 104
+	lwi r6, r1, 108
+	lwi r5, r1, 112
+	lwi r4, r1, 116
+	lwi r2, r1, 124
 
-/* Demo program include files. */
-#include "partest.h"
-#include "USBSerial.h"
+	/* Load the critical nesting value. */
+	lwi r3, r1, 128
+	swi r3, r0, uxCriticalNesting
 
-#define USBSerialSTACK_SIZE		configMINIMAL_STACK_SIZE
-const TickType_t xDelay = 100 / portTICK_PERIOD_MS;
-const TickType_t mDelay = 5000 / portTICK_PERIOD_MS;
-    
-/* The task that is created three times. */
-static portTASK_FUNCTION_PROTO( vUSBSerialTask, pvParameters );
+	/* Obtain the MSR value from the stack. */
+	lwi r3, r1, 8
 
-SemaphoreHandle_t USBMutex;
+	/* Are interrupts enabled in the MSR?  If so return using an return from 
+	interrupt instruction to ensure interrupts are enabled only once the task
+	is running again. */
+	andi r3, r3, 2
+	beqid r3, 36
+	or r0, r0, r0
 
-/*-----------------------------------------------------------*/
+	/* Reload the rmsr from the stack, clear the enable interrupt bit in the
+	value before saving back to rmsr register, then return enabling interrupts
+	as we return. */
+	lwi r3, r1, 8
+	andi r3, r3, ~2
+	mts rmsr, r3
+	lwi r3, r1, 120
+	addik r1, r1, 132
+	rtid r14, 0
+	or r0, r0, r0
 
-void usbserial_putString(const char msg[])
-{
-    if(0 == USBUART_GetConfiguration()) return;
-    xSemaphoreTake(USBMutex,portMAX_DELAY);
-    while(0 == USBUART_CDCIsReady()) vTaskDelay(xDelay);
-    USBUART_PutString(msg);
-    xSemaphoreGive(USBMutex);
-}
+	/* Reload the rmsr from the stack, place it in the rmsr register, and
+	return without enabling interrupts. */
+	lwi r3, r1, 8
+	mts rmsr, r3
+	lwi r3, r1, 120
+	addik r1, r1, 132
+	rtsd r14, 0
+	or r0, r0, r0
 
-void vStartUSBSerialTasks( UBaseType_t uxPriority )
-{
-    /*Setup the mutex to control port access*/
-    USBMutex = xSemaphoreCreateMutex();
-	/* Spawn the task. */
-	xTaskCreate( vUSBSerialTask, "USBSerial", USBSerialSTACK_SIZE, NULL, uxPriority, ( TaskHandle_t * ) NULL );
+	.endm
 
-}
-/*-----------------------------------------------------------*/
+	.text
+	.align  2
 
-static portTASK_FUNCTION( vUSBSerialTask, pvParameters )
-{
-   	/* The parameters are not used. */
-	( void ) pvParameters;
 
-    /* Start the USB_UART */
-    /* Start USBFS operation with 5-V operation. */
-    USBUART_Start(0, USBUART_5V_OPERATION);
+__FreeRTOS_interrupt_handler:
+	portSAVE_CONTEXT
+	/* Entered via an interrupt so interrupts must be enabled in msr. */
+	ori r31, r31, 2
+	/* Stack msr. */
+	swi r31, r1, 8
+	/* Stack the return address.  As we entered via an interrupt we do
+	not need to modify the return address prior to stacking. */
+	swi r14, r1, 76
+	/* Now switch to use the ISR stack. */
+	lwi r3, r0, pulISRStack
+	add r1, r3, r0
+	bralid r15, vTaskISRHandler
+	or r0, r0, r0
+	portRESTORE_CONTEXT
 
-    
-	for(;;)
-	{
-        /* Host can send double SET_INTERFACE request. */
-        if (0u != USBUART_IsConfigurationChanged())
-        {
-            /* Initialize IN endpoints when device is configured. */
-            if (0u != USBUART_GetConfiguration())
-            {
-                /* Enumeration is done, enable OUT endpoint to receive data 
-                 * from host. */
-                USBUART_CDC_Init();
-            }
-        }
-        
-        if(0 != USBUART_GetConfiguration())
-        {
-            /* Get and process inputs here */
-            vTaskDelay(mDelay);
-        }
-        vTaskDelay(xDelay);
-	}
-} /*lint !e715 !e818 !e830 Function definition must be standard for task creation. */
+
+VPortYieldASM:
+	portSAVE_CONTEXT
+	/* Stack msr. */
+	swi r31, r1, 8
+	/* Modify the return address so we return to the instruction after the
+	exception. */
+	addi r14, r14, 8
+	swi r14, r1, 76
+	/* Now switch to use the ISR stack. */
+	lwi r3, r0, pulISRStack
+	add r1, r3, r0
+	bralid r15, vTaskSwitchContext
+	or r0, r0, r0
+	portRESTORE_CONTEXT
+
+vStartFirstTask:
+	portRESTORE_CONTEXT
+	
+	
+
+
+
 

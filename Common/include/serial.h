@@ -67,91 +67,74 @@
     1 tab == 4 spaces!
 */
 
-/**
- * This version of flash .c is for use on systems that have limited stack space
- * and no display facilities.  The complete version can be found in the 
- * Demo/Common/Full directory.
- * 
- * Three tasks are created, each of which flash an LED at a different rate.  The first 
- * LED flashes every 200ms, the second every 400ms, the third every 600ms.
- *
- * The LED flash tasks provide instant visual feedback.  They show that the scheduler 
- * is still operational.
- *
- */
+#ifndef SERIAL_COMMS_H
+#define SERIAL_COMMS_H
 
+typedef void * xComPortHandle;
 
-#include <stdlib.h>
+typedef enum
+{ 
+	serCOM1, 
+	serCOM2, 
+	serCOM3, 
+	serCOM4, 
+	serCOM5, 
+	serCOM6, 
+	serCOM7, 
+	serCOM8 
+} eCOMPort;
 
-/* Scheduler include files. */
-#include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
+typedef enum 
+{ 
+	serNO_PARITY, 
+	serODD_PARITY, 
+	serEVEN_PARITY, 
+	serMARK_PARITY, 
+	serSPACE_PARITY 
+} eParity;
 
-/* Demo program include files. */
-#include "partest.h"
-#include "USBSerial.h"
+typedef enum 
+{ 
+	serSTOP_1, 
+	serSTOP_2 
+} eStopBits;
 
-#define USBSerialSTACK_SIZE		configMINIMAL_STACK_SIZE
-const TickType_t xDelay = 100 / portTICK_PERIOD_MS;
-const TickType_t mDelay = 5000 / portTICK_PERIOD_MS;
-    
-/* The task that is created three times. */
-static portTASK_FUNCTION_PROTO( vUSBSerialTask, pvParameters );
+typedef enum 
+{ 
+	serBITS_5, 
+	serBITS_6, 
+	serBITS_7, 
+	serBITS_8 
+} eDataBits;
 
-SemaphoreHandle_t USBMutex;
+typedef enum 
+{ 
+	ser50,		
+	ser75,		
+	ser110,		
+	ser134,		
+	ser150,    
+	ser200,
+	ser300,		
+	ser600,		
+	ser1200,	
+	ser1800,	
+	ser2400,   
+	ser4800,
+	ser9600,		
+	ser19200,	
+	ser38400,	
+	ser57600,	
+	ser115200
+} eBaud;
 
-/*-----------------------------------------------------------*/
+xComPortHandle xSerialPortInitMinimal( unsigned long ulWantedBaud, unsigned portBASE_TYPE uxQueueLength );
+xComPortHandle xSerialPortInit( eCOMPort ePort, eBaud eWantedBaud, eParity eWantedParity, eDataBits eWantedDataBits, eStopBits eWantedStopBits, unsigned portBASE_TYPE uxBufferLength );
+void vSerialPutString( xComPortHandle pxPort, const signed char * const pcString, unsigned short usStringLength );
+signed portBASE_TYPE xSerialGetChar( xComPortHandle pxPort, signed char *pcRxedChar, TickType_t xBlockTime );
+signed portBASE_TYPE xSerialPutChar( xComPortHandle pxPort, signed char cOutChar, TickType_t xBlockTime );
+portBASE_TYPE xSerialWaitForSemaphore( xComPortHandle xPort );
+void vSerialClose( xComPortHandle xPort );
 
-void usbserial_putString(const char msg[])
-{
-    if(0 == USBUART_GetConfiguration()) return;
-    xSemaphoreTake(USBMutex,portMAX_DELAY);
-    while(0 == USBUART_CDCIsReady()) vTaskDelay(xDelay);
-    USBUART_PutString(msg);
-    xSemaphoreGive(USBMutex);
-}
-
-void vStartUSBSerialTasks( UBaseType_t uxPriority )
-{
-    /*Setup the mutex to control port access*/
-    USBMutex = xSemaphoreCreateMutex();
-	/* Spawn the task. */
-	xTaskCreate( vUSBSerialTask, "USBSerial", USBSerialSTACK_SIZE, NULL, uxPriority, ( TaskHandle_t * ) NULL );
-
-}
-/*-----------------------------------------------------------*/
-
-static portTASK_FUNCTION( vUSBSerialTask, pvParameters )
-{
-   	/* The parameters are not used. */
-	( void ) pvParameters;
-
-    /* Start the USB_UART */
-    /* Start USBFS operation with 5-V operation. */
-    USBUART_Start(0, USBUART_5V_OPERATION);
-
-    
-	for(;;)
-	{
-        /* Host can send double SET_INTERFACE request. */
-        if (0u != USBUART_IsConfigurationChanged())
-        {
-            /* Initialize IN endpoints when device is configured. */
-            if (0u != USBUART_GetConfiguration())
-            {
-                /* Enumeration is done, enable OUT endpoint to receive data 
-                 * from host. */
-                USBUART_CDC_Init();
-            }
-        }
-        
-        if(0 != USBUART_GetConfiguration())
-        {
-            /* Get and process inputs here */
-            vTaskDelay(mDelay);
-        }
-        vTaskDelay(xDelay);
-	}
-} /*lint !e715 !e818 !e830 Function definition must be standard for task creation. */
+#endif
 

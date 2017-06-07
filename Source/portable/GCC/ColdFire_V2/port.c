@@ -67,91 +67,110 @@
     1 tab == 4 spaces!
 */
 
-/**
- * This version of flash .c is for use on systems that have limited stack space
- * and no display facilities.  The complete version can be found in the 
- * Demo/Common/Full directory.
- * 
- * Three tasks are created, each of which flash an LED at a different rate.  The first 
- * LED flashes every 200ms, the second every 400ms, the third every 600ms.
- *
- * The LED flash tasks provide instant visual feedback.  They show that the scheduler 
- * is still operational.
- *
- */
-
-
-#include <stdlib.h>
-
-/* Scheduler include files. */
+/* Kernel includes. */
 #include "FreeRTOS.h"
 #include "task.h"
-#include "semphr.h"
 
-/* Demo program include files. */
-#include "partest.h"
-#include "USBSerial.h"
+#define portINITIAL_FORMAT_VECTOR		( ( StackType_t ) 0x4000 )
 
-#define USBSerialSTACK_SIZE		configMINIMAL_STACK_SIZE
-const TickType_t xDelay = 100 / portTICK_PERIOD_MS;
-const TickType_t mDelay = 5000 / portTICK_PERIOD_MS;
-    
-/* The task that is created three times. */
-static portTASK_FUNCTION_PROTO( vUSBSerialTask, pvParameters );
+/* Supervisor mode set. */
+#define portINITIAL_STATUS_REGISTER		( ( StackType_t ) 0x2000)
 
-SemaphoreHandle_t USBMutex;
+/* Used to keep track of the number of nested calls to taskENTER_CRITICAL().  This
+will be set to 0 prior to the first task being started. */
+static uint32_t ulCriticalNesting = 0x9999UL;
 
 /*-----------------------------------------------------------*/
 
-void usbserial_putString(const char msg[])
+StackType_t *pxPortInitialiseStack( StackType_t * pxTopOfStack, TaskFunction_t pxCode, void *pvParameters )
 {
-    if(0 == USBUART_GetConfiguration()) return;
-    xSemaphoreTake(USBMutex,portMAX_DELAY);
-    while(0 == USBUART_CDCIsReady()) vTaskDelay(xDelay);
-    USBUART_PutString(msg);
-    xSemaphoreGive(USBMutex);
-}
+	*pxTopOfStack = ( StackType_t ) pvParameters;
+	pxTopOfStack--;
 
-void vStartUSBSerialTasks( UBaseType_t uxPriority )
-{
-    /*Setup the mutex to control port access*/
-    USBMutex = xSemaphoreCreateMutex();
-	/* Spawn the task. */
-	xTaskCreate( vUSBSerialTask, "USBSerial", USBSerialSTACK_SIZE, NULL, uxPriority, ( TaskHandle_t * ) NULL );
+	*pxTopOfStack = (StackType_t) 0xDEADBEEF;
+	pxTopOfStack--;
 
+	/* Exception stack frame starts with the return address. */
+	*pxTopOfStack = ( StackType_t ) pxCode;
+	pxTopOfStack--;
+
+	*pxTopOfStack = ( portINITIAL_FORMAT_VECTOR << 16UL ) | ( portINITIAL_STATUS_REGISTER );
+	pxTopOfStack--;
+
+	*pxTopOfStack = ( StackType_t ) 0x0; /*FP*/
+	pxTopOfStack -= 14; /* A5 to D0. */
+
+    return pxTopOfStack;
 }
 /*-----------------------------------------------------------*/
 
-static portTASK_FUNCTION( vUSBSerialTask, pvParameters )
+BaseType_t xPortStartScheduler( void )
 {
-   	/* The parameters are not used. */
-	( void ) pvParameters;
+extern void vPortStartFirstTask( void );
 
-    /* Start the USB_UART */
-    /* Start USBFS operation with 5-V operation. */
-    USBUART_Start(0, USBUART_5V_OPERATION);
+	ulCriticalNesting = 0UL;
 
-    
-	for(;;)
+	/* Configure the interrupts used by this port. */
+	vApplicationSetupInterrupts();
+
+	/* Start the first task executing. */
+	vPortStartFirstTask();
+
+	return pdFALSE;
+}
+/*-----------------------------------------------------------*/
+
+void vPortEndScheduler( void )
+{
+	/* Not implemented as there is nothing to return to. */
+}
+/*-----------------------------------------------------------*/
+
+void vPortEnterCritical( void )
+{
+	if( ulCriticalNesting == 0UL )
 	{
-        /* Host can send double SET_INTERFACE request. */
-        if (0u != USBUART_IsConfigurationChanged())
-        {
-            /* Initialize IN endpoints when device is configured. */
-            if (0u != USBUART_GetConfiguration())
-            {
-                /* Enumeration is done, enable OUT endpoint to receive data 
-                 * from host. */
-                USBUART_CDC_Init();
-            }
-        }
-        
-        if(0 != USBUART_GetConfiguration())
-        {
-            /* Get and process inputs here */
-            vTaskDelay(mDelay);
-        }
-        vTaskDelay(xDelay);
+		/* Guard against context switches being pended simultaneously with a
+		critical section being entered. */
+		do
+		{
+			portDISABLE_INTERRUPTS();
+			if( MCF_INTC0_INTFRCL == 0UL )
+			{
+				break;
+			}
+
+			portENABLE_INTERRUPTS();
+
+		} while( 1 );
 	}
-} /*lint !e715 !e818 !e830 Function definition must be standard for task creation. */
+	ulCriticalNesting++;
+}
+/*-----------------------------------------------------------*/
+
+void vPortExitCritical( void )
+{
+	ulCriticalNesting--;
+	if( ulCriticalNesting == 0 )
+	{
+		portENABLE_INTERRUPTS();
+	}
+}
+/*-----------------------------------------------------------*/
+
+void vPortYieldHandler( void )
+{
+uint32_t ulSavedInterruptMask;
+
+	ulSavedInterruptMask = portSET_INTERRUPT_MASK_FROM_ISR();
+		/* Note this will clear all forced interrupts - this is done for speed. */
+		MCF_INTC0_INTFRCL = 0;
+		vTaskSwitchContext();
+	portCLEAR_INTERRUPT_MASK_FROM_ISR( ulSavedInterruptMask );
+}
+
+
+
+
+
 

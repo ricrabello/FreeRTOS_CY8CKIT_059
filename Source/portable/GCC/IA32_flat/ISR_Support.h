@@ -67,91 +67,103 @@
     1 tab == 4 spaces!
 */
 
-/**
- * This version of flash .c is for use on systems that have limited stack space
- * and no display facilities.  The complete version can be found in the 
- * Demo/Common/Full directory.
- * 
- * Three tasks are created, each of which flash an LED at a different rate.  The first 
- * LED flashes every 200ms, the second every 400ms, the third every 600ms.
- *
- * The LED flash tasks provide instant visual feedback.  They show that the scheduler 
- * is still operational.
- *
- */
-
-
-#include <stdlib.h>
-
-/* Scheduler include files. */
-#include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
-
-/* Demo program include files. */
-#include "partest.h"
-#include "USBSerial.h"
-
-#define USBSerialSTACK_SIZE		configMINIMAL_STACK_SIZE
-const TickType_t xDelay = 100 / portTICK_PERIOD_MS;
-const TickType_t mDelay = 5000 / portTICK_PERIOD_MS;
-    
-/* The task that is created three times. */
-static portTASK_FUNCTION_PROTO( vUSBSerialTask, pvParameters );
-
-SemaphoreHandle_t USBMutex;
+	.extern ulTopOfSystemStack
+	.extern ulInterruptNesting
 
 /*-----------------------------------------------------------*/
 
-void usbserial_putString(const char msg[])
-{
-    if(0 == USBUART_GetConfiguration()) return;
-    xSemaphoreTake(USBMutex,portMAX_DELAY);
-    while(0 == USBUART_CDCIsReady()) vTaskDelay(xDelay);
-    USBUART_PutString(msg);
-    xSemaphoreGive(USBMutex);
-}
+.macro portFREERTOS_INTERRUPT_ENTRY
 
-void vStartUSBSerialTasks( UBaseType_t uxPriority )
-{
-    /*Setup the mutex to control port access*/
-    USBMutex = xSemaphoreCreateMutex();
-	/* Spawn the task. */
-	xTaskCreate( vUSBSerialTask, "USBSerial", USBSerialSTACK_SIZE, NULL, uxPriority, ( TaskHandle_t * ) NULL );
+	/* Save general purpose registers. */
+	pusha
 
-}
+	/* If ulInterruptNesting is zero the rest of the task context will need
+	saving and a stack switch might be required. */
+	movl	ulInterruptNesting, %eax
+	test	%eax, %eax
+	jne		2f
+
+	/* Interrupts are not nested, so save the rest of the task context. */
+	.if configSUPPORT_FPU == 1
+
+		/* If the task has a buffer allocated to save the FPU context then
+		save the FPU context now. */
+		movl	pucPortTaskFPUContextBuffer, %eax
+		test	%eax, %eax
+		je		1f
+		fnsave	( %eax ) /* Save FLOP context into ucTempFPUBuffer array. */
+		fwait
+
+		1:
+		/* Save the address of the FPU context, if any. */
+		push	pucPortTaskFPUContextBuffer
+
+	.endif /* configSUPPORT_FPU */
+
+	/* Find the TCB. */
+	movl 	pxCurrentTCB, %eax
+
+	/* Stack location is first item in the TCB. */
+	movl	%esp, (%eax)
+
+	/* Switch stacks. */
+	movl 	ulTopOfSystemStack, %esp
+	movl	%esp, %ebp
+
+	2:
+	/* Increment nesting count. */
+	add 	$1, ulInterruptNesting
+
+.endm
 /*-----------------------------------------------------------*/
 
-static portTASK_FUNCTION( vUSBSerialTask, pvParameters )
-{
-   	/* The parameters are not used. */
-	( void ) pvParameters;
+.macro portINTERRUPT_EPILOGUE
 
-    /* Start the USB_UART */
-    /* Start USBFS operation with 5-V operation. */
-    USBUART_Start(0, USBUART_5V_OPERATION);
+	cli
+	sub		$1, ulInterruptNesting
 
-    
-	for(;;)
-	{
-        /* Host can send double SET_INTERFACE request. */
-        if (0u != USBUART_IsConfigurationChanged())
-        {
-            /* Initialize IN endpoints when device is configured. */
-            if (0u != USBUART_GetConfiguration())
-            {
-                /* Enumeration is done, enable OUT endpoint to receive data 
-                 * from host. */
-                USBUART_CDC_Init();
-            }
-        }
-        
-        if(0 != USBUART_GetConfiguration())
-        {
-            /* Get and process inputs here */
-            vTaskDelay(mDelay);
-        }
-        vTaskDelay(xDelay);
-	}
-} /*lint !e715 !e818 !e830 Function definition must be standard for task creation. */
+	/* If the nesting has unwound to zero. */
+	movl	ulInterruptNesting, %eax
+	test	%eax, %eax
+	jne		2f
 
+	/* If a yield was requested then select a new TCB now. */
+	movl	ulPortYieldPending, %eax
+	test	%eax, %eax
+	je		1f
+	movl	$0, ulPortYieldPending
+	call	vTaskSwitchContext
+
+	1:
+	/* Stack location is first item in the TCB. */
+	movl 	pxCurrentTCB, %eax
+	movl	(%eax), %esp
+
+	.if configSUPPORT_FPU == 1
+
+		/* Restore address of task's FPU context buffer. */
+		pop 	pucPortTaskFPUContextBuffer
+
+		/* If the task has a buffer allocated in which its FPU context is saved,
+		then restore it now. */
+		movl	pucPortTaskFPUContextBuffer, %eax
+		test	%eax, %eax
+		je		1f
+		frstor	( %eax )
+		1:
+	.endif
+
+	2:
+	popa
+
+.endm
+/*-----------------------------------------------------------*/
+
+.macro portFREERTOS_INTERRUPT_EXIT
+
+	portINTERRUPT_EPILOGUE
+	/* EOI. */
+	movl	$0x00, (0xFEE000B0)
+	iret
+
+.endm

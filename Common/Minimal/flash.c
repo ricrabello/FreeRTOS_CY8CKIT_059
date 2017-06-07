@@ -86,72 +86,76 @@
 /* Scheduler include files. */
 #include "FreeRTOS.h"
 #include "task.h"
-#include "semphr.h"
 
 /* Demo program include files. */
 #include "partest.h"
-#include "USBSerial.h"
+#include "flash.h"
 
-#define USBSerialSTACK_SIZE		configMINIMAL_STACK_SIZE
-const TickType_t xDelay = 100 / portTICK_PERIOD_MS;
-const TickType_t mDelay = 5000 / portTICK_PERIOD_MS;
-    
+#define ledSTACK_SIZE		configMINIMAL_STACK_SIZE
+#define ledNUMBER_OF_LEDS	( 1 )
+#define ledFLASH_RATE_BASE	( ( TickType_t ) 999 )
+
+/* Variable used by the created tasks to calculate the LED number to use, and
+the rate at which they should flash the LED. */
+static volatile UBaseType_t uxFlashTaskNumber = 0;
+
 /* The task that is created three times. */
-static portTASK_FUNCTION_PROTO( vUSBSerialTask, pvParameters );
-
-SemaphoreHandle_t USBMutex;
+static portTASK_FUNCTION_PROTO( vLEDFlashTask, pvParameters );
 
 /*-----------------------------------------------------------*/
 
-void usbserial_putString(const char msg[])
+void vStartLEDFlashTasks( UBaseType_t uxPriority )
 {
-    if(0 == USBUART_GetConfiguration()) return;
-    xSemaphoreTake(USBMutex,portMAX_DELAY);
-    while(0 == USBUART_CDCIsReady()) vTaskDelay(xDelay);
-    USBUART_PutString(msg);
-    xSemaphoreGive(USBMutex);
-}
+BaseType_t xLEDTask;
 
-void vStartUSBSerialTasks( UBaseType_t uxPriority )
-{
-    /*Setup the mutex to control port access*/
-    USBMutex = xSemaphoreCreateMutex();
-	/* Spawn the task. */
-	xTaskCreate( vUSBSerialTask, "USBSerial", USBSerialSTACK_SIZE, NULL, uxPriority, ( TaskHandle_t * ) NULL );
-
+	/* Create the three tasks. */
+	for( xLEDTask = 0; xLEDTask < ledNUMBER_OF_LEDS; ++xLEDTask )
+	{
+		/* Spawn the task. */
+		xTaskCreate( vLEDFlashTask, "LEDx", ledSTACK_SIZE, NULL, uxPriority, ( TaskHandle_t * ) NULL );
+	}
 }
 /*-----------------------------------------------------------*/
 
-static portTASK_FUNCTION( vUSBSerialTask, pvParameters )
+static portTASK_FUNCTION( vLEDFlashTask, pvParameters )
 {
-   	/* The parameters are not used. */
+TickType_t xFlashRate, xLastFlashTime;
+UBaseType_t uxLED;
+
+	/* The parameters are not used. */
 	( void ) pvParameters;
 
-    /* Start the USB_UART */
-    /* Start USBFS operation with 5-V operation. */
-    USBUART_Start(0, USBUART_5V_OPERATION);
+	/* Calculate the LED and flash rate. */
+	portENTER_CRITICAL();
+	{
+		/* See which of the eight LED's we should use. */
+		uxLED = uxFlashTaskNumber;
 
-    
+		/* Update so the next task uses the next LED. */
+		uxFlashTaskNumber++;
+	}
+	portEXIT_CRITICAL();
+
+	xFlashRate = ledFLASH_RATE_BASE + ( ledFLASH_RATE_BASE * ( TickType_t ) uxLED );
+	xFlashRate /= portTICK_PERIOD_MS;
+
+	/* We will turn the LED on and off again in the delay period, so each
+	delay is only half the total period. */
+	xFlashRate /= ( TickType_t ) 2;
+
+	/* We need to initialise xLastFlashTime prior to the first call to 
+	vTaskDelayUntil(). */
+	xLastFlashTime = xTaskGetTickCount();
+
 	for(;;)
 	{
-        /* Host can send double SET_INTERFACE request. */
-        if (0u != USBUART_IsConfigurationChanged())
-        {
-            /* Initialize IN endpoints when device is configured. */
-            if (0u != USBUART_GetConfiguration())
-            {
-                /* Enumeration is done, enable OUT endpoint to receive data 
-                 * from host. */
-                USBUART_CDC_Init();
-            }
-        }
-        
-        if(0 != USBUART_GetConfiguration())
-        {
-            /* Get and process inputs here */
-            vTaskDelay(mDelay);
-        }
-        vTaskDelay(xDelay);
+		/* Delay for half the flash period then turn the LED on. */
+		vTaskDelayUntil( &xLastFlashTime, xFlashRate );
+		vParTestToggleLED( uxLED );
+
+		/* Delay for half the flash period then turn the LED off. */
+		vTaskDelayUntil( &xLastFlashTime, xFlashRate );
+		vParTestToggleLED( uxLED );
 	}
 } /*lint !e715 !e818 !e830 Function definition must be standard for task creation. */
 

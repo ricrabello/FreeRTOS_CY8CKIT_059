@@ -67,91 +67,90 @@
     1 tab == 4 spaces!
 */
 
-/**
- * This version of flash .c is for use on systems that have limited stack space
- * and no display facilities.  The complete version can be found in the 
- * Demo/Common/Full directory.
- * 
- * Three tasks are created, each of which flash an LED at a different rate.  The first 
- * LED flashes every 200ms, the second every 400ms, the third every 600ms.
+#ifndef PORTMACRO_H
+#define PORTMACRO_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*-----------------------------------------------------------
+ * Port specific definitions.
  *
- * The LED flash tasks provide instant visual feedback.  They show that the scheduler 
- * is still operational.
+ * The settings in this file configure FreeRTOS correctly for the
+ * given hardware and compiler.
  *
+ * These settings should not be altered.
+ *-----------------------------------------------------------
  */
 
+/* Type definitions. */
+#define portCHAR		char
+#define portFLOAT		float
+#define portDOUBLE		double
+#define portLONG		long
+#define portSHORT		short
+#define portSTACK_TYPE	uint32_t
+#define portBASE_TYPE	long
 
-#include <stdlib.h>
+typedef portSTACK_TYPE StackType_t;
+typedef long BaseType_t;
+typedef unsigned long UBaseType_t;
 
-/* Scheduler include files. */
-#include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
+#if( configUSE_16_BIT_TICKS == 1 )
+	typedef uint16_t TickType_t;
+	#define portMAX_DELAY ( TickType_t ) 0xffff
+#else
+	typedef uint32_t TickType_t;
+	#define portMAX_DELAY ( TickType_t ) 0xffffffffUL
+#endif
+/*-----------------------------------------------------------*/
 
-/* Demo program include files. */
-#include "partest.h"
-#include "USBSerial.h"
+/* Hardware specifics. */
+#define portBYTE_ALIGNMENT			4
+#define portSTACK_GROWTH			-1
+#define portTICK_PERIOD_MS			( ( TickType_t ) 1000 / configTICK_RATE_HZ )
+/*-----------------------------------------------------------*/
+uint32_t ulPortSetIPL( uint32_t );
+#define portDISABLE_INTERRUPTS()	ulPortSetIPL( configMAX_SYSCALL_INTERRUPT_PRIORITY )
+#define portENABLE_INTERRUPTS()		ulPortSetIPL( 0 )
 
-#define USBSerialSTACK_SIZE		configMINIMAL_STACK_SIZE
-const TickType_t xDelay = 100 / portTICK_PERIOD_MS;
-const TickType_t mDelay = 5000 / portTICK_PERIOD_MS;
-    
-/* The task that is created three times. */
-static portTASK_FUNCTION_PROTO( vUSBSerialTask, pvParameters );
 
-SemaphoreHandle_t USBMutex;
+extern void vPortEnterCritical( void );
+extern void vPortExitCritical( void );
+#define portENTER_CRITICAL()		vPortEnterCritical()
+#define portEXIT_CRITICAL()			vPortExitCritical()
+
+extern UBaseType_t uxPortSetInterruptMaskFromISR( void );
+extern void vPortClearInterruptMaskFromISR( UBaseType_t );
+#define portSET_INTERRUPT_MASK_FROM_ISR()	ulPortSetIPL( configMAX_SYSCALL_INTERRUPT_PRIORITY )
+#define portCLEAR_INTERRUPT_MASK_FROM_ISR( uxSavedStatusRegister ) ulPortSetIPL( uxSavedStatusRegister )
 
 /*-----------------------------------------------------------*/
 
-void usbserial_putString(const char msg[])
-{
-    if(0 == USBUART_GetConfiguration()) return;
-    xSemaphoreTake(USBMutex,portMAX_DELAY);
-    while(0 == USBUART_CDCIsReady()) vTaskDelay(xDelay);
-    USBUART_PutString(msg);
-    xSemaphoreGive(USBMutex);
-}
+/* Task utilities. */
 
-void vStartUSBSerialTasks( UBaseType_t uxPriority )
-{
-    /*Setup the mutex to control port access*/
-    USBMutex = xSemaphoreCreateMutex();
-	/* Spawn the task. */
-	xTaskCreate( vUSBSerialTask, "USBSerial", USBSerialSTACK_SIZE, NULL, uxPriority, ( TaskHandle_t * ) NULL );
+#define portNOP()	asm volatile ( 	"nop" )
 
-}
+/* Note this will overwrite all other bits in the force register, it is done this way for speed. */
+#define portYIELD()			MCF_INTC0_INTFRCL = ( 1UL << configYIELD_INTERRUPT_VECTOR ); portNOP(); portNOP()
+
 /*-----------------------------------------------------------*/
 
-static portTASK_FUNCTION( vUSBSerialTask, pvParameters )
-{
-   	/* The parameters are not used. */
-	( void ) pvParameters;
+/* Task function macros as described on the FreeRTOS.org WEB site. */
+#define portTASK_FUNCTION_PROTO( vFunction, pvParameters ) void vFunction( void *pvParameters ) __attribute__((noreturn))
+#define portTASK_FUNCTION( vFunction, pvParameters ) void vFunction( void *pvParameters )
+/*-----------------------------------------------------------*/
 
-    /* Start the USB_UART */
-    /* Start USBFS operation with 5-V operation. */
-    USBUART_Start(0, USBUART_5V_OPERATION);
+#define portEND_SWITCHING_ISR( xSwitchRequired )	if( xSwitchRequired != pdFALSE )	\
+													{									\
+														portYIELD();					\
+													}
 
-    
-	for(;;)
-	{
-        /* Host can send double SET_INTERFACE request. */
-        if (0u != USBUART_IsConfigurationChanged())
-        {
-            /* Initialize IN endpoints when device is configured. */
-            if (0u != USBUART_GetConfiguration())
-            {
-                /* Enumeration is done, enable OUT endpoint to receive data 
-                 * from host. */
-                USBUART_CDC_Init();
-            }
-        }
-        
-        if(0 != USBUART_GetConfiguration())
-        {
-            /* Get and process inputs here */
-            vTaskDelay(mDelay);
-        }
-        vTaskDelay(xDelay);
-	}
-} /*lint !e715 !e818 !e830 Function definition must be standard for task creation. */
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* PORTMACRO_H */
 

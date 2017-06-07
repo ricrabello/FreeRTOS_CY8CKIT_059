@@ -67,91 +67,56 @@
     1 tab == 4 spaces!
 */
 
-/**
- * This version of flash .c is for use on systems that have limited stack space
- * and no display facilities.  The complete version can be found in the 
- * Demo/Common/Full directory.
- * 
- * Three tasks are created, each of which flash an LED at a different rate.  The first 
- * LED flashes every 200ms, the second every 400ms, the third every 600ms.
- *
- * The LED flash tasks provide instant visual feedback.  They show that the scheduler 
- * is still operational.
- *
- */
+#include "FreeRTOSConfig.h"
+#include "ISR_Support.h"
+
+	.global    _vPortYield
+	.global    _vPortStartFirstTask
+	.global    _vPortTickISR
+
+	.extern    _vTaskSwitchContext
+	.extern    _xTaskIncrementTick
+
+	.text
+	.align 2
+
+/* FreeRTOS yield handler.  This is installed as the BRK software interrupt
+handler. */
+_vPortYield:
+	/* Save the context of the current task. */
+	portSAVE_CONTEXT
+	/* Call the scheduler to select the next task. */
+	call      !!_vTaskSwitchContext
+	/* Restore the context of the next task to run. */
+	portRESTORE_CONTEXT
+	retb
 
 
-#include <stdlib.h>
+/* Starts the scheduler by restoring the context of the task that will execute
+first. */
+	.align 2
+_vPortStartFirstTask:
+	/* Restore the context of whichever task will execute first. */
+	portRESTORE_CONTEXT
+	/* An interrupt stack frame is used so the task is started using RETI. */
+	reti
 
-/* Scheduler include files. */
-#include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
+/* FreeRTOS tick handler.  This is installed as the interval timer interrupt
+handler. */
+	.align 2
+_vPortTickISR:
 
-/* Demo program include files. */
-#include "partest.h"
-#include "USBSerial.h"
+	/* Save the context of the currently executing task. */
+	portSAVE_CONTEXT
+	/* Call the RTOS tick function. */
+	call      !!_xTaskIncrementTick
+#if configUSE_PREEMPTION == 1
+	/* Select the next task to run. */
+	call      !!_vTaskSwitchContext
+#endif
+	/* Retore the context of whichever task will run next. */
+	portRESTORE_CONTEXT
+	reti
 
-#define USBSerialSTACK_SIZE		configMINIMAL_STACK_SIZE
-const TickType_t xDelay = 100 / portTICK_PERIOD_MS;
-const TickType_t mDelay = 5000 / portTICK_PERIOD_MS;
-    
-/* The task that is created three times. */
-static portTASK_FUNCTION_PROTO( vUSBSerialTask, pvParameters );
-
-SemaphoreHandle_t USBMutex;
-
-/*-----------------------------------------------------------*/
-
-void usbserial_putString(const char msg[])
-{
-    if(0 == USBUART_GetConfiguration()) return;
-    xSemaphoreTake(USBMutex,portMAX_DELAY);
-    while(0 == USBUART_CDCIsReady()) vTaskDelay(xDelay);
-    USBUART_PutString(msg);
-    xSemaphoreGive(USBMutex);
-}
-
-void vStartUSBSerialTasks( UBaseType_t uxPriority )
-{
-    /*Setup the mutex to control port access*/
-    USBMutex = xSemaphoreCreateMutex();
-	/* Spawn the task. */
-	xTaskCreate( vUSBSerialTask, "USBSerial", USBSerialSTACK_SIZE, NULL, uxPriority, ( TaskHandle_t * ) NULL );
-
-}
-/*-----------------------------------------------------------*/
-
-static portTASK_FUNCTION( vUSBSerialTask, pvParameters )
-{
-   	/* The parameters are not used. */
-	( void ) pvParameters;
-
-    /* Start the USB_UART */
-    /* Start USBFS operation with 5-V operation. */
-    USBUART_Start(0, USBUART_5V_OPERATION);
-
-    
-	for(;;)
-	{
-        /* Host can send double SET_INTERFACE request. */
-        if (0u != USBUART_IsConfigurationChanged())
-        {
-            /* Initialize IN endpoints when device is configured. */
-            if (0u != USBUART_GetConfiguration())
-            {
-                /* Enumeration is done, enable OUT endpoint to receive data 
-                 * from host. */
-                USBUART_CDC_Init();
-            }
-        }
-        
-        if(0 != USBUART_GetConfiguration())
-        {
-            /* Get and process inputs here */
-            vTaskDelay(mDelay);
-        }
-        vTaskDelay(xDelay);
-	}
-} /*lint !e715 !e818 !e830 Function definition must be standard for task creation. */
+	.end
 
