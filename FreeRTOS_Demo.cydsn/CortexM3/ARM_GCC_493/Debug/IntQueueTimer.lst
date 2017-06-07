@@ -1,4 +1,4 @@
-ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 1
+ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccf4nOK0.s 			page 1
 
 
    1              		.syntax unified
@@ -58,7 +58,7 @@ ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 1
   29:IntQueueTimer.c ****      *    platform software that is more than just the market leader, it     *
   30:IntQueueTimer.c ****      *    is the industry's de facto standard.                               *
   31:IntQueueTimer.c ****      *                                                                       *
-ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 2
+ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccf4nOK0.s 			page 2
 
 
   32:IntQueueTimer.c ****      *    Help yourself get started quickly while simultaneously helping     *
@@ -118,7 +118,7 @@ ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 1
   86:IntQueueTimer.c **** void vInitialiseTimerForIntQueueTest( void )
   87:IntQueueTimer.c **** {
   27              		.loc 1 87 0
-ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 3
+ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccf4nOK0.s 			page 3
 
 
   28              		.cfi_startproc
@@ -178,7 +178,7 @@ ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 1
  101:IntQueueTimer.c **** 
  102:IntQueueTimer.c **** CY_ISR(vHighFrequencyFirstISR)
  103:IntQueueTimer.c **** {
-ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 4
+ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccf4nOK0.s 			page 4
 
 
   69              		.loc 1 103 0
@@ -238,7 +238,7 @@ ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 1
  116              		@ frame_needed = 1, uses_anonymous_args = 0
  117 0000 80B5     		push	{r7, lr}
  118              		.cfi_def_cfa_offset 8
-ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 5
+ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccf4nOK0.s 			page 5
 
 
  119              		.cfi_offset 7, -8
@@ -279,7 +279,7 @@ ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 1
  151              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
  152              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
  153              		.file 4 "Generated_Source\\PSoC5/cytypes.h"
- 154              		.file 5 "../../../Source/portable/GCC/ARM_CM3/portmacro.h"
+ 154              		.file 5 "..\\Source\\portable\\GCC\\ARM_CM3/portmacro.h"
  155              		.file 6 "Generated_Source\\PSoC5/core_cm3.h"
  156              		.section	.debug_info,"",%progbits
  157              	.Ldebug_info0:
@@ -288,20 +288,20 @@ ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 1
  160 0006 00000000 		.4byte	.Ldebug_abbrev0
  161 000a 04       		.byte	0x4
  162 000b 01       		.uleb128 0x1
- 163 000c 44010000 		.4byte	.LASF22
+ 163 000c DB000000 		.4byte	.LASF22
  164 0010 01       		.byte	0x1
- 165 0011 10010000 		.4byte	.LASF23
- 166 0015 47000000 		.4byte	.LASF24
+ 165 0011 A7000000 		.4byte	.LASF23
+ 166 0015 D7010000 		.4byte	.LASF24
  167 0019 00000000 		.4byte	.Ldebug_ranges0+0
  168 001d 00000000 		.4byte	0
  169 0021 00000000 		.4byte	.Ldebug_line0
  170 0025 02       		.uleb128 0x2
  171 0026 01       		.byte	0x1
  172 0027 06       		.byte	0x6
-ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 6
+ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccf4nOK0.s 			page 6
 
 
- 173 0028 FE010000 		.4byte	.LASF0
+ 173 0028 95010000 		.4byte	.LASF0
  174 002c 02       		.uleb128 0x2
  175 002d 01       		.byte	0x1
  176 002e 08       		.byte	0x8
@@ -309,20 +309,20 @@ ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 1
  178 0033 02       		.uleb128 0x2
  179 0034 02       		.byte	0x2
  180 0035 05       		.byte	0x5
- 181 0036 1A020000 		.4byte	.LASF2
+ 181 0036 B1010000 		.4byte	.LASF2
  182 003a 02       		.uleb128 0x2
  183 003b 02       		.byte	0x2
  184 003c 07       		.byte	0x7
  185 003d 0E000000 		.4byte	.LASF3
  186 0041 03       		.uleb128 0x3
- 187 0042 0A020000 		.4byte	.LASF5
+ 187 0042 A1010000 		.4byte	.LASF5
  188 0046 02       		.byte	0x2
  189 0047 3F       		.byte	0x3f
  190 0048 4C000000 		.4byte	0x4c
  191 004c 02       		.uleb128 0x2
  192 004d 04       		.byte	0x4
  193 004e 05       		.byte	0x5
- 194 004f 3B010000 		.4byte	.LASF4
+ 194 004f D2000000 		.4byte	.LASF4
  195 0053 03       		.uleb128 0x3
  196 0054 3C000000 		.4byte	.LASF6
  197 0058 02       		.byte	0x2
@@ -331,7 +331,7 @@ ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 1
  200 005e 02       		.uleb128 0x2
  201 005f 04       		.byte	0x4
  202 0060 07       		.byte	0x7
- 203 0061 B0000000 		.4byte	.LASF7
+ 203 0061 67000000 		.4byte	.LASF7
  204 0065 02       		.uleb128 0x2
  205 0066 08       		.byte	0x8
  206 0067 05       		.byte	0x5
@@ -339,7 +339,7 @@ ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 1
  208 006c 02       		.uleb128 0x2
  209 006d 08       		.byte	0x8
  210 006e 07       		.byte	0x7
- 211 006f C2000000 		.4byte	.LASF9
+ 211 006f 79000000 		.4byte	.LASF9
  212 0073 04       		.uleb128 0x4
  213 0074 04       		.byte	0x4
  214 0075 05       		.byte	0x5
@@ -349,32 +349,32 @@ ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 1
  218 007c 07       		.byte	0x7
  219 007d 21000000 		.4byte	.LASF10
  220 0081 03       		.uleb128 0x3
- 221 0082 24020000 		.4byte	.LASF11
+ 221 0082 BB010000 		.4byte	.LASF11
  222 0086 03       		.byte	0x3
  223 0087 2C       		.byte	0x2c
  224 0088 41000000 		.4byte	0x41
  225 008c 03       		.uleb128 0x3
- 226 008d 32010000 		.4byte	.LASF12
+ 226 008d C9000000 		.4byte	.LASF12
  227 0091 03       		.byte	0x3
  228 0092 2D       		.byte	0x2d
  229 0093 53000000 		.4byte	0x53
-ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 7
+ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccf4nOK0.s 			page 7
 
 
  230 0097 02       		.uleb128 0x2
  231 0098 04       		.byte	0x4
  232 0099 04       		.byte	0x4
- 233 009a 14020000 		.4byte	.LASF13
+ 233 009a AB010000 		.4byte	.LASF13
  234 009e 02       		.uleb128 0x2
  235 009f 08       		.byte	0x8
  236 00a0 04       		.byte	0x4
- 237 00a1 D2010000 		.4byte	.LASF14
+ 237 00a1 69010000 		.4byte	.LASF14
  238 00a5 02       		.uleb128 0x2
  239 00a6 01       		.byte	0x1
  240 00a7 08       		.byte	0x8
- 241 00a8 2D010000 		.4byte	.LASF15
+ 241 00a8 C4000000 		.4byte	.LASF15
  242 00ac 05       		.uleb128 0x5
- 243 00ad 20010000 		.4byte	.LASF16
+ 243 00ad B7000000 		.4byte	.LASF16
  244 00b1 04       		.byte	0x4
  245 00b2 4E02     		.2byte	0x24e
  246 00b4 B8000000 		.4byte	0xb8
@@ -385,14 +385,14 @@ ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 1
  251 00bf 02       		.uleb128 0x2
  252 00c0 04       		.byte	0x4
  253 00c1 07       		.byte	0x7
- 254 00c2 2C020000 		.4byte	.LASF17
+ 254 00c2 CE010000 		.4byte	.LASF17
  255 00c6 03       		.uleb128 0x3
- 256 00c7 35020000 		.4byte	.LASF18
+ 256 00c7 C3010000 		.4byte	.LASF18
  257 00cb 05       		.byte	0x5
  258 00cc 62       		.byte	0x62
  259 00cd 4C000000 		.4byte	0x4c
  260 00d1 08       		.uleb128 0x8
- 261 00d2 F0000000 		.4byte	.LASF19
+ 261 00d2 47000000 		.4byte	.LASF19
  262 00d6 01       		.byte	0x1
  263 00d7 56       		.byte	0x56
  264 00d8 00000000 		.4byte	.LFB68
@@ -400,7 +400,7 @@ ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 1
  266 00e0 01       		.uleb128 0x1
  267 00e1 9C       		.byte	0x9c
  268 00e2 08       		.uleb128 0x8
- 269 00e3 D9000000 		.4byte	.LASF20
+ 269 00e3 90000000 		.4byte	.LASF20
  270 00e7 01       		.byte	0x1
  271 00e8 66       		.byte	0x66
  272 00e9 00000000 		.4byte	.LFB69
@@ -408,7 +408,7 @@ ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 1
  274 00f1 01       		.uleb128 0x1
  275 00f2 9C       		.byte	0x9c
  276 00f3 08       		.uleb128 0x8
- 277 00f4 D9010000 		.4byte	.LASF21
+ 277 00f4 70010000 		.4byte	.LASF21
  278 00f8 01       		.byte	0x1
  279 00f9 6D       		.byte	0x6d
  280 00fa 00000000 		.4byte	.LFB70
@@ -416,9 +416,9 @@ ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 1
  282 0102 01       		.uleb128 0x1
  283 0103 9C       		.byte	0x9c
  284 0104 09       		.uleb128 0x9
- 285 0105 F1010000 		.4byte	.LASF25
+ 285 0105 88010000 		.4byte	.LASF25
  286 0109 06       		.byte	0x6
-ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 8
+ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccf4nOK0.s 			page 8
 
 
  287 010a 9606     		.2byte	0x696
@@ -478,7 +478,7 @@ ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 1
  341 002f 0B       		.uleb128 0xb
  342 0030 3E       		.uleb128 0x3e
  343 0031 0B       		.uleb128 0xb
-ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 9
+ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccf4nOK0.s 			page 9
 
 
  344 0032 03       		.uleb128 0x3
@@ -538,7 +538,7 @@ ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 1
  398 0069 00       		.byte	0
  399 006a 00       		.byte	0
  400 006b 09       		.uleb128 0x9
-ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 10
+ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccf4nOK0.s 			page 10
 
 
  401 006c 34       		.uleb128 0x34
@@ -593,12 +593,12 @@ ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 1
  450 001c 00000000 		.4byte	0
  451              		.section	.debug_line,"",%progbits
  452              	.Ldebug_line0:
- 453 0000 D3010000 		.section	.debug_str,"MS",%progbits,1
- 453      02008401 
+ 453 0000 CD010000 		.section	.debug_str,"MS",%progbits,1
+ 453      02007E01 
  453      00000201 
  453      FB0E0D00 
  453      01010101 
-ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 11
+ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccf4nOK0.s 			page 11
 
 
  454              	.LASF8:
@@ -626,125 +626,122 @@ ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 1
  463 003c 5F5F7569 		.ascii	"__uint32_t\000"
  463      6E743332 
  463      5F7400
- 464              	.LASF24:
- 465 0047 433A5C55 		.ascii	"C:\\Users\\bmt\\Downloads\\FreeRTOSv9.0.0\\FreeRTOS"
- 465      73657273 
- 465      5C626D74 
- 465      5C446F77 
- 465      6E6C6F61 
- 466 0075 5C44656D 		.ascii	"\\Demo\\CORTEX_CY8C5588_PSoC_Creator_GCC\\FreeRTOS_"
- 466      6F5C434F 
- 466      52544558 
- 466      5F435938 
- 466      43353538 
- 467 00a5 44656D6F 		.ascii	"Demo.cydsn\000"
- 467      2E637964 
- 467      736E00
- 468              	.LASF7:
- 469 00b0 6C6F6E67 		.ascii	"long unsigned int\000"
- 469      20756E73 
- 469      69676E65 
- 469      6420696E 
- 469      7400
- 470              	.LASF9:
- 471 00c2 6C6F6E67 		.ascii	"long long unsigned int\000"
- 471      206C6F6E 
- 471      6720756E 
- 471      7369676E 
- 471      65642069 
- 472              	.LASF20:
- 473 00d9 76486967 		.ascii	"vHighFrequencyFirstISR\000"
- 473      68467265 
- 473      7175656E 
- 473      63794669 
- 473      72737449 
-ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 12
+ 464              	.LASF19:
+ 465 0047 76496E69 		.ascii	"vInitialiseTimerForIntQueueTest\000"
+ 465      7469616C 
+ 465      69736554 
+ 465      696D6572 
+ 465      466F7249 
+ 466              	.LASF7:
+ 467 0067 6C6F6E67 		.ascii	"long unsigned int\000"
+ 467      20756E73 
+ 467      69676E65 
+ 467      6420696E 
+ 467      7400
+ 468              	.LASF9:
+ 469 0079 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 469      206C6F6E 
+ 469      6720756E 
+ 469      7369676E 
+ 469      65642069 
+ 470              	.LASF20:
+ 471 0090 76486967 		.ascii	"vHighFrequencyFirstISR\000"
+ 471      68467265 
+ 471      7175656E 
+ 471      63794669 
+ 471      72737449 
+ 472              	.LASF23:
+ 473 00a7 496E7451 		.ascii	"IntQueueTimer.c\000"
+ 473      75657565 
+ 473      54696D65 
+ 473      722E6300 
+ 474              	.LASF16:
+ 475 00b7 63796973 		.ascii	"cyisraddress\000"
+ 475      72616464 
+ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccf4nOK0.s 			page 12
 
 
- 474              	.LASF19:
- 475 00f0 76496E69 		.ascii	"vInitialiseTimerForIntQueueTest\000"
- 475      7469616C 
- 475      69736554 
- 475      696D6572 
- 475      466F7249 
- 476              	.LASF23:
- 477 0110 496E7451 		.ascii	"IntQueueTimer.c\000"
- 477      75657565 
- 477      54696D65 
- 477      722E6300 
- 478              	.LASF16:
- 479 0120 63796973 		.ascii	"cyisraddress\000"
- 479      72616464 
- 479      72657373 
+ 475      72657373 
+ 475      00
+ 476              	.LASF15:
+ 477 00c4 63686172 		.ascii	"char\000"
+ 477      00
+ 478              	.LASF12:
+ 479 00c9 75696E74 		.ascii	"uint32_t\000"
+ 479      33325F74 
  479      00
- 480              	.LASF15:
- 481 012d 63686172 		.ascii	"char\000"
+ 480              	.LASF4:
+ 481 00d2 6C6F6E67 		.ascii	"long int\000"
+ 481      20696E74 
  481      00
- 482              	.LASF12:
- 483 0132 75696E74 		.ascii	"uint32_t\000"
- 483      33325F74 
- 483      00
- 484              	.LASF4:
- 485 013b 6C6F6E67 		.ascii	"long int\000"
- 485      20696E74 
- 485      00
- 486              	.LASF22:
- 487 0144 474E5520 		.ascii	"GNU C 4.9.3 20150303 (release) [ARM/embedded-4_9-br"
- 487      4320342E 
- 487      392E3320 
- 487      32303135 
- 487      30333033 
- 488 0177 616E6368 		.ascii	"anch revision 221220] -mcpu=cortex-m3 -mthumb -g -O"
- 488      20726576 
- 488      6973696F 
- 488      6E203232 
- 488      31323230 
- 489 01aa 30202D66 		.ascii	"0 -ffunction-sections -ffat-lto-objects\000"
- 489      66756E63 
- 489      74696F6E 
- 489      2D736563 
- 489      74696F6E 
- 490              	.LASF14:
- 491 01d2 646F7562 		.ascii	"double\000"
- 491      6C6500
- 492              	.LASF21:
- 493 01d9 76486967 		.ascii	"vHighFrequencySecondISR\000"
- 493      68467265 
- 493      7175656E 
- 493      63795365 
- 493      636F6E64 
- 494              	.LASF25:
- 495 01f1 49544D5F 		.ascii	"ITM_RxBuffer\000"
- 495      52784275 
- 495      66666572 
- 495      00
-ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccXASp29.s 			page 13
+ 482              	.LASF22:
+ 483 00db 474E5520 		.ascii	"GNU C 4.9.3 20150303 (release) [ARM/embedded-4_9-br"
+ 483      4320342E 
+ 483      392E3320 
+ 483      32303135 
+ 483      30333033 
+ 484 010e 616E6368 		.ascii	"anch revision 221220] -mcpu=cortex-m3 -mthumb -g -O"
+ 484      20726576 
+ 484      6973696F 
+ 484      6E203232 
+ 484      31323230 
+ 485 0141 30202D66 		.ascii	"0 -ffunction-sections -ffat-lto-objects\000"
+ 485      66756E63 
+ 485      74696F6E 
+ 485      2D736563 
+ 485      74696F6E 
+ 486              	.LASF14:
+ 487 0169 646F7562 		.ascii	"double\000"
+ 487      6C6500
+ 488              	.LASF21:
+ 489 0170 76486967 		.ascii	"vHighFrequencySecondISR\000"
+ 489      68467265 
+ 489      7175656E 
+ 489      63795365 
+ 489      636F6E64 
+ 490              	.LASF25:
+ 491 0188 49544D5F 		.ascii	"ITM_RxBuffer\000"
+ 491      52784275 
+ 491      66666572 
+ 491      00
+ 492              	.LASF0:
+ 493 0195 7369676E 		.ascii	"signed char\000"
+ 493      65642063 
+ 493      68617200 
+ 494              	.LASF5:
+ 495 01a1 5F5F696E 		.ascii	"__int32_t\000"
+ 495      7433325F 
+ 495      7400
+ 496              	.LASF13:
+ 497 01ab 666C6F61 		.ascii	"float\000"
+ 497      7400
+ 498              	.LASF2:
+ 499 01b1 73686F72 		.ascii	"short int\000"
+ 499      7420696E 
+ARM GAS  C:\Users\bmt\AppData\Local\Temp\ccf4nOK0.s 			page 13
 
 
- 496              	.LASF0:
- 497 01fe 7369676E 		.ascii	"signed char\000"
- 497      65642063 
- 497      68617200 
- 498              	.LASF5:
- 499 020a 5F5F696E 		.ascii	"__int32_t\000"
- 499      7433325F 
  499      7400
- 500              	.LASF13:
- 501 0214 666C6F61 		.ascii	"float\000"
- 501      7400
- 502              	.LASF2:
- 503 021a 73686F72 		.ascii	"short int\000"
- 503      7420696E 
- 503      7400
- 504              	.LASF11:
- 505 0224 696E7433 		.ascii	"int32_t\000"
- 505      325F7400 
- 506              	.LASF17:
- 507 022c 73697A65 		.ascii	"sizetype\000"
- 507      74797065 
- 507      00
- 508              	.LASF18:
- 509 0235 42617365 		.ascii	"BaseType_t\000"
- 509      54797065 
- 509      5F7400
- 510              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 4.9.3 20150303 (release) [ARM/embedded-4_9-br
+ 500              	.LASF11:
+ 501 01bb 696E7433 		.ascii	"int32_t\000"
+ 501      325F7400 
+ 502              	.LASF18:
+ 503 01c3 42617365 		.ascii	"BaseType_t\000"
+ 503      54797065 
+ 503      5F7400
+ 504              	.LASF17:
+ 505 01ce 73697A65 		.ascii	"sizetype\000"
+ 505      74797065 
+ 505      00
+ 506              	.LASF24:
+ 507 01d7 433A5C55 		.ascii	"C:\\Users\\bmt\\Documents\\GitHub\\FreeRTOS_CY8CKIT"
+ 507      73657273 
+ 507      5C626D74 
+ 507      5C446F63 
+ 507      756D656E 
+ 508 0205 5F303539 		.ascii	"_059\\FreeRTOS_Demo.cydsn\000"
+ 508      5C467265 
+ 508      6552544F 
+ 508      535F4465 
+ 508      6D6F2E63 
+ 509              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 4.9.3 20150303 (release) [ARM/embedded-4_9-br
