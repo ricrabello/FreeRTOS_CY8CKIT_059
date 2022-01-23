@@ -203,10 +203,11 @@ extern cyisraddress CyRamVectors[];
 	CyRamVectors[ 15 ] = ( cyisraddress ) xPortSysTickHandler;
 
 	/* Start-up the peripherals. */
-
-
+    
+    
 	/* Start the UART. */
-	UART_1_Start();
+	UART_1_Start();    
+    
 
 	/* Initialise the LEDs. */
 	vParTestInitialise();

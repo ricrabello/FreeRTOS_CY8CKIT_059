@@ -149,6 +149,7 @@ static portTASK_FUNCTION( vUSBSerialTask, pvParameters )
         if(0 != USBUART_GetConfiguration())
         {
             /* Get and process inputs here */
+            
             vTaskDelay(mDelay);
         }
         vTaskDelay(xDelay);

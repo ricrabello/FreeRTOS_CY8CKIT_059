@@ -2,7 +2,31 @@
 <DesignWideResources xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://cypress.com/xsd/cydwr">
   <Group key="Clock2">
     <Data key="ClockSolver" value="0" />
-    <Group key="DesigneWideClks" />
+    <Group key="DesigneWideClks">
+      <Group key="EA5BD050-803A-11E1-BE1A-86B94724019B">
+        <Data key="check_tolerance" value="True" />
+        <Data key="clock_version" value="v1" />
+        <Data key="derive_type" value="AUTO" />
+        <Data key="desired_freq" value="10" />
+        <Data key="desired_unit" value="6" />
+        <Data key="divider" value="6" />
+        <Data key="domain" value="0" />
+        <Data key="enabled" value="True" />
+        <Data key="minus_accuracy" value="0.25" />
+        <Data key="minus_tolerance" value="20" />
+        <Data key="name" value="ScBoostClk" />
+        <Data key="netlist_name" value="ScBoostClk" />
+        <Data key="placement" value="AUTO" />
+        <Data key="plus_accuracy" value="0.25" />
+        <Data key="plus_tolerance" value="30" />
+        <Data key="scope" value="GLOBAL" />
+        <Data key="src_clk_id" value="39D5E4C2-EBFC-44ab-AE3D-19F9BBFD674D" />
+        <Data key="src_clk_name" value="PLL_OUT" />
+        <Data key="start_on_reset" value="False" />
+        <Data key="sync_with_bus_clk" value="False" />
+        <Data key="user_set_domain" value="False" />
+      </Group>
+    </Group>
     <Group key="LocalClks">
       <Group key="831ee977-2b67-4267-95e3-d18001dd07c3">
         <Data key="check_tolerance" value="True" />
@@ -34,7 +58,7 @@
         <Data key="derive_type" value="AUTO" />
         <Data key="desired_freq" value="1" />
         <Data key="desired_unit" value="6" />
-        <Data key="divider" value="24" />
+        <Data key="divider" value="60" />
         <Data key="domain" value="DIGITAL" />
         <Data key="enabled" value="True" />
         <Data key="minus_accuracy" value="0.25" />
@@ -45,8 +69,8 @@
         <Data key="plus_accuracy" value="0.25" />
         <Data key="plus_tolerance" value="5" />
         <Data key="scope" value="LOCAL" />
-        <Data key="src_clk_id" value="CEF43CFB-0213-49b9-B980-2FFAB81C5B47" />
-        <Data key="src_clk_name" value="IMO" />
+        <Data key="src_clk_id" value="61737EF6-3B74-48f9-8B91-F7473A442AE7" />
+        <Data key="src_clk_name" value="MASTER_CLK" />
         <Data key="start_on_reset" value="True" />
         <Data key="sync_with_bus_clk" value="True" />
         <Data key="user_set_domain" value="False" />
@@ -57,7 +81,7 @@
         <Data key="derive_type" value="AUTO" />
         <Data key="desired_freq" value="460.8" />
         <Data key="desired_unit" value="3" />
-        <Data key="divider" value="52" />
+        <Data key="divider" value="130" />
         <Data key="domain" value="DIGITAL" />
         <Data key="enabled" value="True" />
         <Data key="minus_accuracy" value="0.25" />
@@ -68,8 +92,8 @@
         <Data key="plus_accuracy" value="0.25" />
         <Data key="plus_tolerance" value="3.9373684210526316" />
         <Data key="scope" value="LOCAL" />
-        <Data key="src_clk_id" value="CEF43CFB-0213-49b9-B980-2FFAB81C5B47" />
-        <Data key="src_clk_name" value="IMO" />
+        <Data key="src_clk_id" value="61737EF6-3B74-48f9-8B91-F7473A442AE7" />
+        <Data key="src_clk_name" value="MASTER_CLK" />
         <Data key="start_on_reset" value="True" />
         <Data key="sync_with_bus_clk" value="True" />
         <Data key="user_set_domain" value="False" />
@@ -128,10 +152,10 @@
         <Data key="check_tolerance" value="True" />
         <Data key="clock_version" value="v1" />
         <Data key="derive_type" value="BUILTIN" />
-        <Data key="desired_freq" value="48" />
+        <Data key="desired_freq" value="60" />
         <Data key="desired_unit" value="6" />
         <Data key="divider" value="0" />
-        <Data key="domain" value="DIGITAL" />
+        <Data key="domain" value="0" />
         <Data key="enabled" value="True" />
         <Data key="minus_accuracy" value="0.25" />
         <Data key="minus_tolerance" value="0" />
@@ -192,9 +216,9 @@
         <Data key="clock_version" value="v1" />
         <Data key="derive_type" value="BUILTIN" />
         <Data key="desired_freq" value="0" />
-        <Data key="desired_unit" value="15" />
+        <Data key="desired_unit" value="0" />
         <Data key="divider" value="1" />
-        <Data key="domain" value="DIGITAL" />
+        <Data key="domain" value="0" />
         <Data key="enabled" value="True" />
         <Data key="minus_accuracy" value="0.25" />
         <Data key="minus_tolerance" value="0" />
@@ -214,12 +238,12 @@
         <Data key="check_tolerance" value="True" />
         <Data key="clock_version" value="v1" />
         <Data key="derive_type" value="BUILTIN" />
-        <Data key="desired_freq" value="0" />
-        <Data key="desired_unit" value="15" />
+        <Data key="desired_freq" value="60" />
+        <Data key="desired_unit" value="6" />
         <Data key="divider" value="1" />
-        <Data key="domain" value="DIGITAL" />
+        <Data key="domain" value="0" />
         <Data key="enabled" value="True" />
-        <Data key="master_divider_used" value="True" />
+        <Data key="master_divider_used" value="False" />
         <Data key="minus_accuracy" value="0.25" />
         <Data key="minus_tolerance" value="0" />
         <Data key="name" value="MASTER_CLK" />
@@ -318,12 +342,12 @@
         <Data key="desired_freq" value="32.768" />
         <Data key="desired_unit" value="3" />
         <Data key="divider" value="0" />
-        <Data key="domain" value="DIGITAL" />
-        <Data key="enabled" value="False" />
+        <Data key="domain" value="0" />
+        <Data key="enabled" value="True" />
         <Data key="minus_accuracy" value="0" />
         <Data key="minus_tolerance" value="0" />
-        <Data key="name" value="XTAL_32KHZ" />
-        <Data key="netlist_name" value="XTAL 32kHz" />
+        <Data key="name" value="XTAL 32kHz" />
+        <Data key="netlist_name" value="XTAL_32KHZ" />
         <Data key="placement" value="GLOBAL" />
         <Data key="plus_accuracy" value="0" />
         <Data key="plus_tolerance" value="0" />
@@ -341,6 +365,7 @@
   <Group key="Component">
     <Group key="v1">
       <Data key="cy_boot" value="cy_boot_v5_50" />
+      <Data key="Em_EEPROM_Dynamic" value="Em_EEPROM_Dynamic_v2_20" />
       <Data key="LIN_Dynamic" value="LIN_Dynamic_v3_40" />
     </Group>
   </Group>
@@ -375,11 +400,41 @@
     </Group>
   </Group>
   <Group key="Interrupt">
-    <Data key="02efb5ad-7029-477c-a888-f9f1511e916c" value="5" />
-    <Data key="4be9b064-b50c-4c90-b41c-7adbb8364931" value="5" />
-    <Data key="595e87a5-6d49-4a71-b8d9-3bee9fdc0077" value="6" />
-    <Data key="a9771fe3-8f69-437c-a0fc-8e93dbe5d92e" value="0" />
-    <Data key="c47fb12c-6974-486d-b829-a20f4afd3d9e" value="6" />
+    <Group key="02efb5ad-7029-477c-a888-f9f1511e916c">
+      <Group key="CortexM3">
+        <Data key="Assigned" value="True" />
+        <Data key="Priority" value="5" />
+        <Data key="Vector" value="-1" />
+      </Group>
+    </Group>
+    <Group key="4be9b064-b50c-4c90-b41c-7adbb8364931">
+      <Group key="CortexM3">
+        <Data key="Assigned" value="True" />
+        <Data key="Priority" value="5" />
+        <Data key="Vector" value="-1" />
+      </Group>
+    </Group>
+    <Group key="595e87a5-6d49-4a71-b8d9-3bee9fdc0077">
+      <Group key="CortexM3">
+        <Data key="Assigned" value="True" />
+        <Data key="Priority" value="6" />
+        <Data key="Vector" value="-1" />
+      </Group>
+    </Group>
+    <Group key="a9771fe3-8f69-437c-a0fc-8e93dbe5d92e">
+      <Group key="CortexM3">
+        <Data key="Assigned" value="True" />
+        <Data key="Priority" value="0" />
+        <Data key="Vector" value="-1" />
+      </Group>
+    </Group>
+    <Group key="c47fb12c-6974-486d-b829-a20f4afd3d9e">
+      <Group key="CortexM3">
+        <Data key="Assigned" value="True" />
+        <Data key="Priority" value="6" />
+        <Data key="Vector" value="-1" />
+      </Group>
+    </Group>
   </Group>
   <Group key="Pin2">
     <Group key="3a0a5806-ffd9-43bc-b395-84692ceed6cb">
@@ -394,7 +449,7 @@
     </Group>
     <Group key="1425177d-0d0e-4468-8bcc-e638e5509a9b">
       <Group key="0">
-        <Data key="Port Format" value="12,6" />
+        <Data key="Port Format" value="6,3" />
       </Group>
     </Group>
     <Group key="a774cbee-f634-4288-91e6-9ae6a6f16e58/ed092b9b-d398-4703-be89-cebf998501f6">
@@ -425,6 +480,11 @@
         <Data key="Port Format" value="15,7" />
       </Group>
     </Group>
+    <Group key="beca5e2d-f70f-4900-a4db-7eca1ed3126e/618a72fc-5ddd-4df5-958f-a3d55102db42">
+      <Group key="0">
+        <Data key="Port Format" value="15,6" />
+      </Group>
+    </Group>
     <Group key="d2d370b0-ab5e-45a8-bdaa-cae154932b4e">
       <Group key="0">
         <Data key="Port Format" value="0,3" />
@@ -432,12 +492,12 @@
     </Group>
     <Group key="dd8e7b7a-4555-4c6e-b975-b71c8ba57ccc">
       <Group key="0">
-        <Data key="Port Format" value="2,1" />
+        <Data key="Port Format" value="15,1" />
       </Group>
     </Group>
     <Group key="ed092b9b-d398-4703-be89-cebf998501f6">
       <Group key="0">
-        <Data key="Port Format" value="12,7" />
+        <Data key="Port Format" value="6,2" />
       </Group>
     </Group>
     <Group key="UnAssigned Pins" />
@@ -466,7 +526,27 @@
     </Group>
   </Group>
   <Group key="System3">
-    <Data key="CYDEV_HEAP_SIZE" value="0" />
-    <Data key="CYDEV_STACK_SIZE" value="1024" />
+    <Data key="CYDEV_CONFIG_FASTBOOT_ENABLED" value="True" />
+    <Data key="CYDEV_CONFIG_UNUSED_IO" value="AllowButWarn" />
+    <Data key="CYDEV_CONFIGURATION_ECC" value="True" />
+    <Data key="CYDEV_CONFIGURATION_MODE" value="COMPRESSED" />
+    <Data key="CYDEV_DEBUGGING_DPS" value="SWD" />
+    <Data key="CYDEV_DEBUGGING_XRES" value="False" />
+    <Data key="CYDEV_ECC_ENABLE" value="False" />
+    <Data key="CYDEV_HEAP_SIZE" value="0x1000" />
+    <Data key="CYDEV_INSTRUCT_CACHE_ENABLED" value="True" />
+    <Data key="CYDEV_PROTECTION_ENABLE" value="False" />
+    <Data key="CYDEV_STACK_SIZE" value="0x1400" />
+    <Data key="CYDEV_TEMPERATURE" value="-40C - 85/125C" />
+    <Data key="CYDEV_TRACE_ENABLED" value="False" />
+    <Data key="CYDEV_USE_BUNDLED_CMSIS" value="True" />
+    <Data key="CYDEV_VARIABLE_VDDA" value="True" />
+    <Data key="CYDEV_VDDA" value="5.0" />
+    <Data key="CYDEV_VDDD" value="3" />
+    <Data key="CYDEV_VDDIO0" value="3" />
+    <Data key="CYDEV_VDDIO1" value="3" />
+    <Data key="CYDEV_VDDIO2" value="3" />
+    <Data key="CYDEV_VDDIO3" value="3" />
+    <Data key="CYDEV_WO_NVL_ENABLED" value="False" />
   </Group>
 </DesignWideResources>
